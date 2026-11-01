@@ -1,0 +1,15 @@
+{
+  "name": "own-proxy",
+  "version": "1.0.0",
+  "description": "Self-hosted web proxy: browse any website through your own proxy URL server.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/run.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "private": true
+}

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>own-proxy</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --panel: #141924;
+    --panel-2: #1b2130;
+    --line: #262e3f;
+    --text: #e6ecf7;
+    --muted: #93a0b8;
+    --accent: #4f8cff;
+    --accent-2: #22d3a6;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(900px 500px at 15% -10%, rgba(79,140,255,.18), transparent 60%),
+      radial-gradient(700px 450px at 95% 0%, rgba(34,211,166,.13), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 56px 20px 40px;
+  }
+  .wrap { width: 100%; max-width: 760px; }
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .logo {
+    width: 38px; height: 38px; border-radius: 11px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center; font-weight: 800; color: #08111f; font-size: 18px;
+  }
+  h1 { font-size: 24px; margin: 0; letter-spacing: -.2px; }
+  .tagline { color: var(--muted); font-size: 14px; margin: 0 0 28px 50px; }
+  .search {
+    display: flex; gap: 10px; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 14px; padding: 10px;
+    box-shadow: 0 18px 50px rgba(0,0,0,.45);
+  }
+  .search input {
+    flex: 1; background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+    border-radius: 10px; padding: 13px 15px; font-size: 15px; outline: none;
+  }
+  .search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,140,255,.18); }
+  .search button {
+    border: 0; border-radius: 10px; padding: 0 22px; font-size: 15px; font-weight: 650;
+    color: #061020; background: linear-gradient(135deg, var(--accent), #7aa9ff); cursor: pointer;
+  }
+  .search button:hover { filter: brightness(1.08); }
+  .hint { color: var(--muted); font-size: 12.5px; margin: 12px 4px 0; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 26px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 13px;
+    padding: 15px 16px; text-decoration: none; color: inherit; transition: .15s;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .card b { display: block; font-size: 14px; margin-bottom: 4px; }
+  .card span { color: var(--muted); font-size: 12px; }
+  .info {
+    margin-top: 34px; border-top: 1px solid var(--line); padding-top: 20px;
+    color: var(--muted); font-size: 13px; line-height: 1.75;
+  }
+  .info code {
+    background: var(--panel-2); border: 1px solid var(--line); padding: 2px 7px;
+    border-radius: 6px; color: #7dd3fc; font-size: 12.5px;
+  }
+  .info h2 { color: var(--text); font-size: 14px; margin: 0 0 8px; letter-spacing: .3px; text-transform: uppercase; opacity: .8; }
+  .status { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 10px var(--accent-2); }
+  footer { margin-top: 30px; color: #5b6780; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <div class="logo">↯</div>
+    <h1>own-proxy</h1>
+  </div>
+  <p class="tagline">Your own proxy URL server — browse any site through <code>yourhost/p/&lt;host&gt;/…</code></p>
+
+  <form class="search" id="f">
+    <input id="q" type="text" placeholder="Search the web or enter a URL (example.com)" autocomplete="off" spellcheck="false" autofocus>
+    <button type="submit">Go</button>
+  </form>
+  <p class="hint">Tip: typing a domain goes straight to the proxied page. Everything you click stays inside the proxy.</p>
+
+  <div class="cards">
+    <a class="card" href="/p/example.com"><b>Example.com</b><span>Basic page test</span></a>
+    <a class="card" href="/p/www.wikipedia.org"><b>Wikipedia</b><span>Heavy CSS + images</span></a>
+    <a class="card" href="/p/news.ycombinator.com"><b>Hacker News</b><span>Links + forms</span></a>
+    <a class="card" href="/p/developer.mozilla.org"><b>MDN</b><span>Docs site</span></a>
+  </div>
+
+  <div class="info">
+    <h2>How it works</h2>
+    <p>
+      Every target site keeps its real path, but the address becomes yours:
+      <code>http://your-server:8080/p/&lt;host&gt;/&lt;path&gt;</code>.
+      The server downloads the page, rewrites every link, image, stylesheet
+      and script to point back at itself, and streams it to your browser.
+      Forms, cookies and XHR requests are forwarded to the real site.
+    </p>
+    <h2>API</h2>
+    <p><code>GET /api/proxy-url?url=https://example.com</code> &rarr; returns the proxy URL for any address.</p>
+    <p><code>GET /health</code> &rarr; server status.</p>
+    <h2>Notes</h2>
+    <p>
+      Login-protected sites and heavy JS SPAs can behave oddly because the site still sees requests
+      coming from your server. Private/internal addresses are blocked by default to stop the proxy being
+      abused. Set <code>ALLOW_PRIVATE_NETWORKS=1</code> if you need to reach hosts on your LAN.
+    </p>
+    <p class="status"><span class="dot"></span> server online &middot; proxying enabled</p>
+  </div>
+
+  <footer>own-proxy &middot; zero dependencies &middot; Node.js</footer>
+</div>
+
+<script>
+  var SEARCH = 'https://duckduckgo.com/?q=';
+  document.getElementById('f').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var raw = document.getElementById('q').value.trim();
+    if (!raw) return;
+    var target;
+    if (/^https?:\/\//i.test(raw)) {
+      target = raw;
+    } else if (/^[\w-]+(\.[\w-]+)+(:\d+)?(\/.*)?$/i.test(raw) || /^localhost(:\d+)?/i.test(raw)) {
+      target = 'https://' + raw;
+    } else {
+      target = SEARCH + encodeURIComponent(raw);
+    }
+    window.location.href = '/p/' + target.replace(/^https?:\/\//i, '');
+  });
+</script>
+</body>
+</html>

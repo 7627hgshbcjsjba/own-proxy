@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: own-proxy
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /health
+    maxShutdownDelaySeconds: 15
+    envVars:
+      - key: NODE_VERSION
+        value: "22.11.0"
+      # Public proxy -> keep the per-visitor budget tight.
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "60"
+      - key: MAX_CONCURRENT_REQUESTS
+        value: "32"
+      # The proxy must be able to reach the wider internet.
+      - key: ALLOW_PRIVATE_NETWORKS
+        value: "0"
